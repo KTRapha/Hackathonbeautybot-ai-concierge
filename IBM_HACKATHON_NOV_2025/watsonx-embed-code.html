@@ -1,0 +1,30 @@
+<!-- IBM watsonx Orchestrate Embed Code for BeautyBot AI Agent -->
+<!-- Agent ID: b2b3cb4a-6a9e-4948-866e-0a219d52f188 -->
+<!-- Instance: beautybot-orchestrate -->
+
+<script>
+  window.wxOConfiguration = {
+    orchestrationID: "20251121-1551-0051-5001-c767bdffb586_20251121-1556-2612-30e6-441c3146e72d",
+    hostURL: "https://dl.watson-orchestrate.ibm.com",
+    rootElementID: "root",
+    chatOptions: {
+        agentId: "b2b3cb4a-6a9e-4948-866e-0a219d52f188", 
+    }
+  };
+  setTimeout(function () {
+    const script = document.createElement('script');
+    script.src = `${window.wxOConfiguration.hostURL}/wxochat/wxoLoader.js?embed=true`;
+    script.addEventListener('load', function () {
+        wxoLoader.init();
+    });
+    document.head.appendChild(script);
+  }, 0);                     
+</script>
+
+<!-- 
+  USAGE:
+  1. Add <div id="root"></div> where you want the chat widget
+  2. Paste this script before </body> tag
+  3. The chat widget will appear automatically
+-->
+

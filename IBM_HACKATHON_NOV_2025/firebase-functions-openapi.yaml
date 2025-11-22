@@ -1,0 +1,263 @@
+openapi: 3.0.0
+info:
+  title: BeautyOnTheMove Firebase Cloud Functions
+  description: API for BeautyBot AI Agent to interact with Firebase backend
+  version: 1.0.0
+servers:
+  - url: https://us-central1-beautyonthemoveapp.cloudfunctions.net
+    description: Firebase Cloud Functions (us-central1)
+
+paths:
+  /createServiceRequest:
+    post:
+      summary: Create a new service request
+      description: Creates a booking request with all required details
+      operationId: createServiceRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - description
+                - address
+                - date
+                - time
+                - budget
+                - category
+                - serviceType
+                - lat
+                - lng
+              properties:
+                description:
+                  type: string
+                  description: Service description or style name
+                  example: "Box braids, medium length"
+                address:
+                  type: string
+                  description: Full street address
+                  example: "123 Main St, Sandton, Johannesburg"
+                date:
+                  type: string
+                  format: date
+                  description: Service date in YYYY-MM-DD format
+                  example: "2025-11-23"
+                time:
+                  type: string
+                  description: Service time in HH:mm format
+                  example: "14:00"
+                budget:
+                  type: number
+                  description: Budget amount
+                  example: 500
+                category:
+                  type: string
+                  description: Service category
+                  enum: [hair, haircut, hairstyle, nails, makeup, spa_treatment, microblading, face_treatment]
+                  example: "hair"
+                serviceType:
+                  type: string
+                  enum: [home_service, salon_visit]
+                  description: Type of service
+                  example: "home_service"
+                styleName:
+                  type: string
+                  description: Optional style name
+                  example: "Box Braids"
+                lat:
+                  type: number
+                  description: Latitude coordinate
+                  example: -26.1076
+                lng:
+                  type: number
+                  description: Longitude coordinate
+                  example: 28.0567
+      responses:
+        '200':
+          description: Service request created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  requestId:
+                    type: string
+                  referenceNumber:
+                    type: string
+        '400':
+          description: Invalid request parameters
+        '401':
+          description: User not authenticated
+        '500':
+          description: Internal server error
+
+  /validateAddressWithAI:
+    post:
+      summary: Validate address and check technician availability
+      description: Checks if technicians are available for the given address and service type
+      operationId: validateAddressWithAI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - address
+                - category
+                - serviceType
+              properties:
+                address:
+                  type: string
+                  description: Address to validate
+                  example: "Sandton, Johannesburg"
+                category:
+                  type: string
+                  description: Service category
+                  example: "hair"
+                serviceType:
+                  type: string
+                  enum: [home_service, salon_visit]
+                  example: "home_service"
+                customerLat:
+                  type: number
+                  description: Customer latitude (optional)
+                customerLng:
+                  type: number
+                  description: Customer longitude (optional)
+      responses:
+        '200':
+          description: Address validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  availableCount:
+                    type: number
+                  message:
+                    type: string
+                  isServiceable:
+                    type: boolean
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        distance:
+                          type: number
+        '400':
+          description: Invalid request parameters
+
+  /analyzeBudgetWithAI:
+    post:
+      summary: Analyze budget competitiveness
+      description: Provides market insights about the budget for a service category
+      operationId: analyzeBudgetWithAI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - budget
+                - category
+              properties:
+                budget:
+                  type: number
+                  description: Budget amount
+                  example: 500
+                category:
+                  type: string
+                  description: Service category
+                  example: "hair"
+                serviceType:
+                  type: string
+                  enum: [home_service, salon_visit]
+      responses:
+        '200':
+          description: Budget analysis result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  analysis:
+                    type: string
+                  averageMin:
+                    type: number
+                  averageMax:
+                    type: number
+                  competitiveness:
+                    type: string
+                    enum: [low, fair, competitive, premium]
+
+  /analyzeTimeAvailability:
+    post:
+      summary: Analyze time slot availability
+      description: Checks availability for a specific time slot
+      operationId: analyzeTimeAvailability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - timeSlot
+                - category
+              properties:
+                timeSlot:
+                  type: string
+                  description: Time slot (e.g., "14:00")
+                  example: "14:00"
+                category:
+                  type: string
+                  description: Service category
+                  example: "hair"
+                date:
+                  type: string
+                  format: date
+                  description: Service date
+      responses:
+        '200':
+          description: Time availability analysis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  availabilityPercent:
+                    type: number
+                  availableCount:
+                    type: number
+                  tip:
+                    type: string
+                  recommendation:
+                    type: string
+                    enum: [excellent, good, consider_alternative]
+
+components:
+  securitySchemes:
+    FirebaseAuth:
+      type: http
+      scheme: bearer
+      description: Firebase Authentication token (passed automatically by Firebase SDK)
+
+security:
+  - FirebaseAuth: []
+
